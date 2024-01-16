@@ -9,10 +9,12 @@ This project is based on the code from [caddyhttp/httpredirectlistener.go](https
 
 ## Usage
 
+```Caddyfile
 listener_wrappers {
 	http_just_abort
 	tls
 }
+```
 
 See Also: https://caddyserver.com/docs/caddyfile/options#listener-wrappers
 
