@@ -52,6 +52,24 @@ func (HTTPAbortListenerWrapper) CaddyModule() caddy.ModuleInfo {
 }
 
 func (h *HTTPAbortListenerWrapper) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+	for d.Next() {
+		if d.NextArg() {
+			return d.ArgErr()
+		}
+
+		for d.NextBlock(0) {
+			switch d.Val() {
+			case "respond":
+				if !d.NextArg() {
+					return d.ArgErr()
+				}
+				h.Respond = d.Val()
+
+			default:
+				return d.ArgErr()
+			}
+		}
+	}
 	return nil
 }
 
