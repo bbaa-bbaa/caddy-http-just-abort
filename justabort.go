@@ -41,6 +41,7 @@ func init() {
 // This listener wrapper must be placed BEFORE the "tls" listener
 // wrapper, for it to work properly.
 type HTTPAbortListenerWrapper struct {
+	Respond string `json:"respond,omitempty"`
 }
 
 func (HTTPAbortListenerWrapper) CaddyModule() caddy.ModuleInfo {
@@ -55,7 +56,7 @@ func (h *HTTPAbortListenerWrapper) UnmarshalCaddyfile(d *caddyfile.Dispenser) er
 }
 
 func (h *HTTPAbortListenerWrapper) WrapListener(l net.Listener) net.Listener {
-	return &httpAbortListener{l}
+	return &httpAbortListener{l, h.Respond}
 }
 
 // httpAbortListener is listener that checks the first few bytes
@@ -63,6 +64,7 @@ func (h *HTTPAbortListenerWrapper) WrapListener(l net.Listener) net.Listener {
 // to respond to an HTTP request with a redirect.
 type httpAbortListener struct {
 	net.Listener
+	content string
 }
 
 // Accept waits for and returns the next connection to the listener,
@@ -74,15 +76,17 @@ func (l *httpAbortListener) Accept() (net.Conn, error) {
 	}
 
 	return &httpAbortConn{
-		Conn: c,
-		r:    bufio.NewReader(c),
+		Conn:    c,
+		r:       bufio.NewReader(c),
+		content: l.content,
 	}, nil
 }
 
 type httpAbortConn struct {
 	net.Conn
-	once bool
-	r    *bufio.Reader
+	once    bool
+	content string
+	r       *bufio.Reader
 }
 
 // Read tries to peek at the first few bytes of the request, and if we get
@@ -110,6 +114,10 @@ func (c *httpAbortConn) Read(p []byte) (int, error) {
 	// From now on, we can be almost certain the request is HTTP.
 	// The returned error will be non nil and caller are expected to
 	// close the connection.
+
+	if len(c.content) > 0 {
+		c.Conn.Write([]byte(c.content))
+	}
 
 	return 0, fmt.Errorf("aborted http request")
 }
