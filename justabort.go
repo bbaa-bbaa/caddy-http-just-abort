@@ -111,7 +111,7 @@ func (c *httpAbortConn) Read(p []byte) (int, error) {
 	// The returned error will be non nil and caller are expected to
 	// close the connection.
 
-	return 0, fmt.Errorf("Aborted http request")
+	return 0, fmt.Errorf("aborted http request")
 }
 
 // firstBytesLookLikeHTTP reports whether a TLS record header
