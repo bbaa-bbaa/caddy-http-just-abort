@@ -10,9 +10,15 @@ This project is based on the code from [caddyhttp/httpredirectlistener.go](https
 ## Usage
 
 ```Caddyfile
-listener_wrappers {
-	http_just_abort
-	tls
+{
+  servers {
+    listener_wrappers {
+      http_just_abort {
+        respond "Custom content"
+      }
+      tls
+    }
+  }
 }
 ```
 
